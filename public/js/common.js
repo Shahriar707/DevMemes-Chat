@@ -1,4 +1,8 @@
 var cropper; 
+var timer;
+var selectedUsers = [];
+
+// click handler 
 
 $("#postTextarea, #replyTextarea").keyup((event) =>{
     var textbox = $(event.target);
@@ -221,6 +225,45 @@ $("#unpinPostButton").click((event) => {
     })
 })
 
+$("#userSearchTextBox").keydown((event) => {
+    clearTimeout(timer);
+    var textbox = $(event.target);
+    var value = textbox.val();
+
+    if (value == "" && (event.which == 8 || event.keyCode == 8)) {
+        selectedUsers.pop();
+        updateSelectedUserHtml()
+        $(".resultsContainer").html("");
+
+        if (selectedUsers.length == 0) {
+            $("#createChatButton").prop("disabled", true);
+        }
+    }
+
+    timer = setTimeout(() => {
+        value = textbox.val().trim();
+
+        if (value == ""){
+            $(".resultsContainer").html("");
+        } else {
+            searchUsers(value);
+        }
+    }, 1000)
+})
+
+$("#createChatButton").click(() =>{
+    var data = JSON.stringify(selectedUsers);
+
+    $.post("/api/chats", { users:data }, chat => {
+        if (!chat || !chat._id) return alert("Invalid Response!");
+
+        window.location.href = `/messages/${chat._id}`;
+    })
+})
+
+
+// document handler
+
 // Like button
 
 $(document).on("click", ".likeButton", (event) => {
@@ -317,6 +360,21 @@ $(document).on("click", ".followButton", (event) => {
     })
 });
 
+
+$(document).on("click", ".notification.active", (event) => {
+    var container = $(event.target);
+    var notificationId = container.data().id;
+    var href = container.attr("href");
+    event.preventDefault();
+
+    var callback = () => {
+        window.location = href; 
+    }
+    markNotificationAsOpened(notificationId, callback);
+})
+
+
+// functions 
 
 function timeDifference(current, previous) {
 
@@ -560,4 +618,93 @@ function createPostHtml(postData, largeFont = false) {
                     </div>
                 </div>
             </div>`;
+}
+
+function outputSelectableUsers(results, container) {
+    container.html("");
+
+    results.forEach( result => {
+        if (result._id == userLoggedIn._id || selectedUsers.some(user => user._id == result._id)) {
+            return;
+        }
+
+        var html = createUserHtml(result, false);
+        var element = $(html);
+        element.click(() => userSelected(result));
+        container.append(element);
+    })
+
+    if (results.length == 0) {
+        container.append("<span class='noResults'>No results found</span>")
+    }
+}
+
+function searchUsers(searchTerm) {
+    $.get("/api/users", { search:searchTerm }, (results) => {
+        outputSelectableUsers(results, $(".resultsContainer"));
+    })
+}
+
+function userSelected(user) {
+    selectedUsers.push(user);
+    updateSelectedUserHtml()
+    $("#userSearchTextBox").val("").focus();
+    $(".resultsContainer").html("");
+    $("#createChatButton").prop("disabled", false);
+}
+
+function updateSelectedUserHtml() {
+    var element = [];
+    selectedUsers.forEach((user) => {
+        var name = user.firstName + " " + user.lastName;
+        var userElement = $(`<span class='selectedUser'>${name}</span>`);
+        element.push(userElement);
+    })
+
+    $(".selectedUser").remove();
+    $("#selectedUsers").prepend(element);
+}
+
+function getChatName(chatData) {
+    var chatName = chatData.chatName;
+
+    if(!chatName) {
+        var otherChatUsers = getOtherChatUsers(chatData.users);
+        var namesArray = otherChatUsers.map(user => user.firstName + " " + user.lastName);
+        chatName = namesArray.join(", ");
+    }
+    return chatName;
+}
+
+function getOtherChatUsers(users) {
+    if (users.length == 1){
+        return users;
+    }
+
+    return users.filter(user => user.id != userLoggedIn._id);
+}
+
+function messageReceived(newMessage) {
+    if ($(".chatContainer").length == 0) {
+
+    }
+    else {
+        addChatMessageHtml(newMessage);
+    }
+}
+
+function markNotificationAsOpened(notificationId = null, callback = null) {
+    if (callback == null) {
+        callback = () => {
+            location.reload();
+        }
+    }
+
+    var url = notificationId != null ? `/api/notifications/${notificationId}/markAsOpened`:`/api/notifications/markAsOpened`;
+
+    $.ajax({
+        url: url,
+        type: "PUT",
+        success: () => callback()
+    })
 }
