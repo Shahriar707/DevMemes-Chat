@@ -2,7 +2,7 @@ var cropper;
 var timer;
 var selectedUsers = [];
 
-// click handler 
+// Post
 
 $("#postTextarea, #replyTextarea").keyup((event) =>{
     var textbox = $(event.target);
@@ -23,6 +23,8 @@ $("#postTextarea, #replyTextarea").keyup((event) =>{
 
     submitButton.prop("disabled", false);
 })
+
+// Post Submit
 
 $("#submitPostButton, #submitReplyButton").click((event) => {
     var button = $(event.target);
@@ -541,7 +543,7 @@ function createPostHtml(postData, largeFont = false) {
                         <i class="fa-solid fa-share"></i>
                         Shared by <a href='/profile/${sharedBy}'>@${sharedBy}</a>
                     </span>`
-    }
+    } 
     
     var replyFlag = "";
     if (postData.replyTo && postData.replyTo._id) {

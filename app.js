@@ -51,6 +51,7 @@ const uploadRoute = require('./routes/uploadRoutes');
 const searchRoute = require('./routes/searchRoutes');
 const messagesRoute = require('./routes/messagesRoutes');
 const notificationRoute = require('./routes/notificationRoutes');
+const threadRoute = require('./routes/threadRoutes');
 
 app.use('/login', loginRoute);
 app.use('/register', registerRoute);
@@ -61,6 +62,7 @@ app.use('/uploads/', uploadRoute);
 app.use('/search', searchRoute);
 app.use('/messages', middleware.requireLogin, messagesRoute);
 app.use('/notifications', middleware.requireLogin, notificationRoute);
+app.use('/threads', middleware.requireLogin, threadRoute);
 
 
 // api routes
@@ -70,13 +72,14 @@ const usersApiRoute = require('./routes/api/users');
 const chatsApiRoute = require("./routes/api/chats");
 const messagesApiRoute = require("./routes/api/messages");
 const notificationsApiRoute = require('./routes/api/notifications');
+const threadsApiRoute = require('./routes/api/threads');
 
 app.use('/api/posts', postsApiRoute);
 app.use('/api/users', usersApiRoute);
 app.use('/api/chats', chatsApiRoute);
 app.use('/api/messages', messagesApiRoute);
 app.use('/api/notifications', notificationsApiRoute);
-
+app.use('/api/threads', threadsApiRoute);
 
 // socket.io 
 
