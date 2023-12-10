@@ -2,10 +2,14 @@ const express = require('express');
 const app = express();
 const port = 3003;
 const middleware = require('./middleware');
+const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
 const mongoose = require('./database');
 const session = require('express-session');
+const axios = require("axios").default;
+const _ = require('lodash');
+const Jimp = require('jimp');
 
 
 const server = app.listen(port, () => {
@@ -26,7 +30,10 @@ app.set("views", "views");
 
 app.use(bodyParser.urlencoded({ extended:false }));
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.static('public'));
+app.use('/uploads', express.static('/uploads'));
+app.use('/templates', express.static(path.join(__dirname, '/uploads/templates')));
+app.use(express.json());
 
 app.get("/", middleware.requireLogin, (req, res, next) => {
 
@@ -52,6 +59,7 @@ const searchRoute = require('./routes/searchRoutes');
 const messagesRoute = require('./routes/messagesRoutes');
 const notificationRoute = require('./routes/notificationRoutes');
 const threadRoute = require('./routes/threadRoutes');
+const memeRoute = require('./routes/memesRoutes');
 
 app.use('/login', loginRoute);
 app.use('/register', registerRoute);
@@ -63,6 +71,7 @@ app.use('/search', searchRoute);
 app.use('/messages', middleware.requireLogin, messagesRoute);
 app.use('/notifications', middleware.requireLogin, notificationRoute);
 app.use('/threads', middleware.requireLogin, threadRoute);
+app.use('/memes', middleware.requireLogin, memeRoute);
 
 
 // api routes
@@ -80,6 +89,7 @@ app.use('/api/chats', chatsApiRoute);
 app.use('/api/messages', messagesApiRoute);
 app.use('/api/notifications', notificationsApiRoute);
 app.use('/api/threads', threadsApiRoute);
+
 
 // socket.io 
 

@@ -1,0 +1,28 @@
+extends layouts/main-layout.pug
+
+block content 
+    .container
+        .d-flex
+            each i in memes
+                img.meme_image(id=i.id, src=i.url)
+
+        form(action="/memes/generate", method="POST", enctype="application/x-www-form-urlencoded")
+            .input-container
+                label(for="template_id") ID
+                input#template_id(required, name="template_id", type="text")
+            .input-container
+                label(for="username") Username
+                input(required, name="username", type="text")
+            .input-container
+                label(for="password") Password
+                input(required, name="password", type="password")
+            .input-container
+                label(for="text0") Upper text
+                input(required, name="text0", type="text")
+            .input-container
+                label(for="text1") Lower Text
+                input(required, name="text1", type="text")
+            button#memeUploadButton.btn-primary(type="submit") Create 
+
+block scripts 
+    script(src="/js/memes.js")
