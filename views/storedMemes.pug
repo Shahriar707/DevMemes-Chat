@@ -1,0 +1,36 @@
+extends layouts/main-layout.pug
+
+block content
+    .container
+        if memes.length
+            .memes-grid
+                each meme in memes
+                    .meme-item
+                        img.meme-image(src=meme.imageUrl alt="Stored Meme")
+        else
+            p No memes stored yet.
+
+    style.
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .memes-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .meme-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .meme-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }

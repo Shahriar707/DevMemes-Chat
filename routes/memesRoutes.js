@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const _ = require('lodash');
 const axios = require("axios").default;
 const fs = require('fs');
+const Meme = require('../schemas/MemeSchema');
 
 router.get("/", (req, res) => {
 	axios
@@ -36,11 +37,29 @@ router.post("/generate", (req, res) => {
 				},
 			}
 		)
-		.then((response) => {
+		.then(async (response) => {
+			const memeUrl = response.data.data.url;
+        	const newMeme = new Meme({
+            	templateId: req.body.template_id,
+            	topText: req.body.text0,
+            	bottomText: req.body.text1,
+            	imageUrl: memeUrl
+        	});
+        	await newMeme.save();
 			res.render('memeGenerated', { memeUrl: response.data.data.url });
 		}).catch((e) => {
             return res.status(403).send("403 Client Error")
         });
+});
+
+router.get('/stored', async (req, res) => {
+    try {
+        const memes = await Meme.find(); 
+        res.render('storedMemes', { memes }); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Error retrieving stored memes');
+    }
 });
 
 
